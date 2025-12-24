@@ -8,11 +8,21 @@ https://docs.djangoproject.com/en/5.0/howto/deployment/wsgi/
 """
 
 import os
-
+import sys
 from django.core.wsgi import get_wsgi_application
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'home.settings')
 
-application = get_wsgi_application()
+try:
+    application = get_wsgi_application()
+    app = application        # required for Vercel
+except Exception as e:
+    print("WSGI Import Failed", file=sys.stderr)
+    import traceback
+    traceback.print_exc()
+    raise e
 
-app=application  # for 'vercel' deployment
+
+# application = get_wsgi_application()
+
+# app=application  # for 'vercel' deployment
