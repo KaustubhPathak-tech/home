@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Donate</h2>
+
+<p>This is your donation action page.</p>
+
+<a href="{% url 'core:view_profile' %}" class="btn btn-primary">View Profile</a>
+<a href="{% url 'core:edit_profile' %}" class="btn btn-secondary">Edit Profile</a>
+
+{% endblock %}

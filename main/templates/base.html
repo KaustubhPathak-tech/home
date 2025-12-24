@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <title>{% block title %}Site{% endblock %}</title>
+  {% load static %}
+  <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  {% block extra_css %}
+  <style>
+    /* Page header / breadcrumbs */
+    * {
+      -webkit-user-select: none;
+      /* disable text selection */
+    }
+
+    .page-header {
+      background: linear-gradient(180deg, rgba(245, 158, 11, 0.06), rgba(255, 255, 255, 0));
+      padding: clamp(20px, 4.5vh, 56px) 0;
+      /* increased vertical padding */
+    }
+
+    .page-header .container {
+      width: 85vw;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding-inline: clamp(20px, 4vw, 64px);
+      box-sizing: border-box;
+    }
+
+    .page-title {
+      margin: 0 0 6px 0;
+      font-size: clamp(1.4rem, 3.5vw, 2.2rem);
+      color: #111827;
+      font-weight: 700;
+    }
+
+    .breadcrumbs {
+      margin-top: 12px;
+      font-size: 1rem;
+      color: #6b7280;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .breadcrumbs a {
+      color: #6b7280;
+      text-decoration: none;
+    }
+
+    .breadcrumbs a:hover {
+      color: #111827;
+    }
+
+    .breadcrumb-sep {
+      color: #9ca3af;
+      margin: 0 6px;
+    }
+
+    /* Centered small warning toast (force above custom CSS) */
+    #warnBox.warn-container {
+      position: fixed !important;
+      inset: 0 !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      pointer-events: none !important;
+      z-index: 2147483647 !important;
+    }
+
+    #warnText.warn-text {
+      background: rgba(17, 24, 39, 0.96) !important;
+      color: #fff !important;
+      padding: 8px 14px !important;
+      border-radius: 10px !important;
+      font-weight: 600 !important;
+      font-size: 0.98rem !important;
+      box-shadow: 0 8px 24px rgba(2, 6, 23, 0.18) !important;
+      max-width: 90vw !important;
+      text-align: center !important;
+      opacity: 0 !important;
+      transform: translateY(6px) scale(0.98) !important;
+      transition: opacity 180ms ease, transform 180ms ease !important;
+      pointer-events: none !important;
+    }
+
+    #warnText.warn-text.show {
+      opacity: 1 !important;
+      transform: translateY(0) scale(1) !important;
+      pointer-events: auto !important;
+    }
+
+    @media (max-width: 640px) {
+      .page-title {
+        font-size: 1.2rem;
+      }
+
+      .page-header {
+        padding: clamp(12px, 3vh, 20px) 0;
+      }
+    }
+
+    #google_translate_element {
+      position: fixed;
+      top: 15px;
+      right: 20px;
+      z-index: 999999;
+      background: #ffffff;
+      padding: 6px 10px;
+      border-radius: 6px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, .15);
+      border: 2px solid #074fe0;
+    }
+
+    .goog-te-banner-frame {
+      display: none !important;
+    }
+
+    body {
+      top: 0px !important;
+    }
+  </style>
+
+  {% endblock %}
+</head>
+
+<body>
+
+  {% include "navbar.html" %}
+  <div id="google_translate_element" class="fixed top-4 right-4 z-[999999] bg-white shadow-lg rounded-md p-2">
+  </div>
+
+  <section class="page-header" aria-label="Page header">
+    <div class="container">
+      <h1 class="page-title">{% block page_title %}{% endblock %}</h1>
+      <nav class="breadcrumbs" aria-label="Breadcrumbs">{% block breadcrumbs %}{% endblock %}</nav>
+    </div>
+  </section>
+
+  {% block content %}{% endblock %}
+
+  <!-- Auto breadcrumb script: builds breadcrumbs from URL path if the template hasn't provided them -->
+  <script>
+    (function () {
+      function titleize(segment) {
+        try {
+          segment = decodeURIComponent(segment);
+        } catch (e) { }
+        return String(segment).replace(/[-_]+/g, ' ').split(' ').filter(Boolean)
+          .map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+      }
+      document.addEventListener('DOMContentLoaded', function () {
+        const nav = document.querySelector('.breadcrumbs');
+        if (!nav) return;
+        // If breadcrumbs were rendered server-side, don't overwrite them
+        if (nav.textContent.trim().length > 0) return;
+
+        const pathname = window.location.pathname.replace(/(^\/|\/$)/g, '');
+        const crumbs = [];
+        crumbs.push({ name: 'Home', href: '/' });
+
+        if (pathname) {
+          const parts = pathname.split('/').filter(Boolean);
+          let acc = '';
+          parts.forEach((p) => {
+            acc += '/' + p;
+            crumbs.push({ name: titleize(p), href: acc });
+          });
+        }
+
+        // Render breadcrumb elements
+        nav.innerHTML = '';
+        crumbs.forEach((c, i) => {
+          const isLast = i === crumbs.length - 1;
+          if (!isLast) {
+            const a = document.createElement('a');
+            a.href = c.href;
+            a.textContent = c.name;
+            a.setAttribute('aria-label', c.name);
+            nav.appendChild(a);
+
+            const sep = document.createElement('span');
+            sep.className = 'breadcrumb-sep';
+            sep.textContent = '›';
+            nav.appendChild(sep);
+          } else {
+            const span = document.createElement('span');
+            span.textContent = c.name;
+            span.setAttribute('aria-current', 'page');
+            nav.appendChild(span);
+
+            // If page-title is empty, set it for nicer headings
+            const titleEl = document.querySelector('.page-title');
+            if (titleEl && !titleEl.textContent.trim()) {
+              titleEl.textContent = c.name;
+            }
+          }
+        });
+      });
+    })();
+  </script>
+
+
+  <div id="warnBox" class="warn-container hidden" aria-hidden="true">
+    <div id="warnText" class="warn-text" role="status" aria-live="polite">Content protection enabled. Action blocked.
+    </div>
+  </div>
+  <script>
+    (function () {
+      let _warnTimer = null;
+
+      window.warn = function (message = 'Action blocked', duration = 1400) {
+        const box = document.getElementById('warnText');
+        if (!box) return;
+        box.textContent = message;
+        box.setAttribute('aria-hidden', 'false');
+        box.classList.add('show');
+
+        if (_warnTimer) clearTimeout(_warnTimer);
+        _warnTimer = setTimeout(() => {
+          box.classList.remove('show');
+          box.setAttribute('aria-hidden', 'true');
+          _warnTimer = null;
+        }, duration);
+      };
+
+      // Disable Right Click
+      document.addEventListener('contextmenu', e => {
+        e.preventDefault();
+        warn();
+      });
+
+      // Disable Double Click
+      document.addEventListener('dblclick', e => {
+        e.preventDefault();
+        warn();
+      });
+
+      // Disable Keyboard Shortcuts
+      document.addEventListener('keydown', e => {
+        // Ctrl + U
+        if (e.ctrlKey && e.key.toLowerCase() === 'u') {
+          e.preventDefault();
+          warn();
+        }
+
+        // Ctrl + C
+        if (e.ctrlKey && e.key.toLowerCase() === 'c') {
+          e.preventDefault();
+          warn();
+        }
+
+        // Ctrl + Shift + I / J (DevTools) — not blocked to allow debugging in development
+
+        // Save Page Ctrl + S
+        if (e.ctrlKey && e.key.toLowerCase() === 's') {
+          e.preventDefault();
+          warn();
+        }
+
+        // F12 DevTools
+        if (e.key === 'F12') {
+          e.preventDefault();
+          warn();
+        }
+      });
+    })();
+  </script>
+
+  <!-- Translator widget: no logo / no promotion. Uses LibreTranslate public instance by default. -->
+  <!-- <div id="translator-widget" aria-hidden="false"
+    style="position:fixed;right:16px;bottom:16px;z-index:9999;background:#fff;border:1px solid #e5e7eb;border-radius:8px;padding:10px;box-shadow:0 6px 18px rgba(0,0,0,0.08);font-family:inherit;">
+    <label for="lang-select" style="display:block;font-size:12px;color:#374151;margin-bottom:6px">Translate page</label>
+    <div style="display:flex;gap:8px;align-items:center">
+      <select id="lang-select" aria-label="Select language"
+        style="padding:6px;border:1px solid #d1d5db;border-radius:6px;background:#fff;">
+        <option value="">Select language</option>
+        <option value="en">English</option>
+        <option value="hi">हिन्दी</option>
+        <option value="es">Español</option>
+        <option value="fr">Français</option>
+        <option value="de">Deutsch</option>
+        <option value="ta">தமிழ்</option>
+        <option value="te">తెలుగు</option>
+        <option value="bn">বাংলা</option>
+      </select>
+      <button id="translate-btn"
+        style="padding:6px 10px;border-radius:6px;border:none;background:#0ea5a4;color:#fff">Translate</button>
+      <button id="reset-translate-btn"
+        style="padding:6px 10px;border-radius:6px;border:1px solid #d1d5db;background:#fff;color:#374151">Reset</button>
+    </div>
+    <div id="translator-status" style="margin-top:6px;font-size:12px;color:#6b7280;display:none"></div>
+  </div> -->
+  <!-- <script>
+    (function () {
+      // Simple client-side translator. Uses LibreTranslate public instance as a default.
+      // Note: For production, host your own LibreTranslate or use a paid API and secure the key.
+      const translateBtn = document.getElementById('translate-btn');
+      const resetBtn = document.getElementById('reset-translate-btn');
+      const langSelect = document.getElementById('lang-select');
+      const status = document.getElementById('translator-status');
+      let originalTexts = null;
+
+      function collectTextNodes(root) {
+        const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+          acceptNode(node) {
+            if (!node.nodeValue.trim()) return NodeFilter.FILTER_REJECT;
+            // Skip script/style and form controls
+            const parent = node.parentElement;
+            if (!parent) return NodeFilter.FILTER_REJECT;
+            const skipTags = ['SCRIPT', 'STYLE', 'NOSCRIPT', 'TEXTAREA', 'INPUT', 'SELECT'];
+            if (skipTags.includes(parent.tagName)) return NodeFilter.FILTER_REJECT;
+            return NodeFilter.FILTER_ACCEPT;
+          }
+        });
+        const nodes = [];
+        while (walker.nextNode()) nodes.push(walker.currentNode);
+        return nodes;
+      }
+
+      async function translatePage(targetLang) {
+        if (!targetLang) return;
+        const nodes = collectTextNodes(document.body);
+        if (!originalTexts) originalTexts = nodes.map(n => n.nodeValue);
+        status.style.display = 'block';
+        status.textContent = 'Translating...';
+
+        try {
+          for (let i = 0; i < nodes.length; i++) {
+            const text = nodes[i].nodeValue.trim();
+            if (!text) continue;
+
+            const res = await fetch('https://libretranslate.de/translate', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                q: text,
+                source: 'en',
+                target: targetLang,
+                format: 'text'
+              })
+            });
+
+            if (!res.ok) throw new Error('Translation failed');
+
+            const json = await res.json();
+            if (json && json.translatedText) {
+              nodes[i].nodeValue = json.translatedText;
+            }
+            // Throttle to avoid rate limits
+            await new Promise(r => setTimeout(r, 120));
+          }
+          status.textContent = 'Translation complete';
+          setTimeout(() => status.style.display = 'none', 1600);
+        } catch (err) {
+          console.error(err);
+          status.textContent = 'Translation error';
+          setTimeout(() => status.style.display = 'none', 2000);
+        }
+      }
+
+      translateBtn.addEventListener('click', () => {
+        const lang = langSelect.value;
+        if (!lang) return;
+        translatePage(lang);
+      });
+
+      resetBtn.addEventListener('click', () => {
+        if (!originalTexts) return;
+        const nodes = collectTextNodes(document.body);
+        nodes.forEach((n, i) => {
+          n.nodeValue = originalTexts[i] || n.nodeValue;
+        });
+        originalTexts = null;
+      });
+    })();
+  </script> -->
+
+
+  <!-- google translate widget script -->
+
+  <script type="text/javascript">
+    function googleTranslateElementInit() {
+      new google.translate.TranslateElement(
+        { pageLanguage: 'en', includedLanguages: 'en,hi,bn,ta,te,ml,gu,kn,pa,mr,ur,as,or,sa,sd', layout: google.translate.TranslateElement.InlineLayout.SIMPLE },
+        'google_translate_element'
+      );
+    }
+
+    (function monitorGoogleBanner() {
+      const hideBanner = () => {
+        document
+          .querySelectorAll('.VIpgJd-ZVi9od-ORHb-OEVmcd')
+          .forEach(el => el.style.setProperty('display', 'none', 'important'));
+
+        document.body.style.setProperty('top', '0px', 'important');
+      };
+
+      // Hide immediately if already present
+      hideBanner();
+
+      // Watch DOM for injected elements
+      const observer = new MutationObserver(() => hideBanner());
+
+      observer.observe(document.body, {
+        childList: true,
+        subtree: true
+      });
+    })();
+
+  </script>
+
+  <script>
+    function addChooseLanguageOption() {
+      const combo = document.querySelector(".goog-te-combo");
+      if (!combo) return;
+
+      // If placeholder does not exist, create it
+      const exists = [...combo.options].some(o => o.value === "");
+      if (!exists) {
+        const opt = document.createElement("option");
+        opt.value = "";
+        opt.text = "Choose Language";
+        opt.selected = true;
+        opt.disabled = true;
+        combo.insertBefore(opt, combo.firstChild);
+      }
+
+      // Always force dropdown to display placeholder
+      combo.selectedIndex = 0;
+    }
+
+    // Run immediately in case already loaded
+    addChooseLanguageOption();
+
+    // Watch DOM for Google updates after translations
+    const observer = new MutationObserver(() => addChooseLanguageOption());
+    observer.observe(document.body, { childList: true, subtree: true });
+  </script>
+
+  <script type="text/javascript"
+    src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+
+
+  {% include "footer.html" %}
+
+  {% include 'scroll_to_top.html' %}
+</body>
+
+</html>
