@@ -12,6 +12,9 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 
 from pathlib import Path
 import os
+import sys
+
+print("DEBUG SETTINGS LOADED", file=sys.stderr)
 # TEMPLATES[0]['DIRS'] = [os.path.join(BASE_DIR, 'templates')]
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
