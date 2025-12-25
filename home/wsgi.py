@@ -13,16 +13,6 @@ from django.core.wsgi import get_wsgi_application
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'home.settings')
 
-try:
-    application = get_wsgi_application()
-    app = application        # required for Vercel
-except Exception as e:
-    print("WSGI Import Failed", file=sys.stderr)
-    import traceback
-    traceback.print_exc()
-    raise e
-
-
-# application = get_wsgi_application()
+application = get_wsgi_application()
 
 # app=application  # for 'vercel' deployment
